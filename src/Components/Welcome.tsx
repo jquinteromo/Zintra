@@ -6,13 +6,13 @@ type Props = {
 };
 
 export default function Welcome({ onLogout }: Props) {
-  const [user, setUser] = useState(auth.currentUser); // puede ser null al inicio
+  const [user, setUser] = useState(auth.currentUser);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+    const unsubscribe = auth.onAuthStateChanged(firebaseUser => {
       setUser(firebaseUser);
-      setLoading(false); // dejamos de mostrar "cargando"
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -23,8 +23,7 @@ export default function Welcome({ onLogout }: Props) {
     onLogout();
   };
 
-  if (loading) return <p>Cargando...</p>; // mientras Firebase revisa la sesión
-
+  if (loading) return <p>Cargando...</p>;
   if (!user) return <p>No estás autenticado</p>;
 
   return (
