@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 function App() {
 
-    const [screen, setScreen] = useState("pin"); 
+    const [screen, setScreen] = useState("register"); 
   return (
    <div className="p-6">
       {screen === "phone" && <EmailLogin onSuccess={() => setScreen("register")} />}
