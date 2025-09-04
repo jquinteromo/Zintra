@@ -1,41 +1,31 @@
-import './App.css';
-import EmailLogin from './Components/EmailLogin';
-import RegisterUser from './Components/RegisterUser';
-import PinLogin from './Components/PinLogin';
-import { useState } from 'react';
-import { auth } from './firebase'; // asegúrate que la ruta sea correcta
+import { useState, useEffect } from "react";
+import { auth, db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
 
+import RegisterUser from "./Components/RegisterUser";
+import LoginUser from "./Components/LoginUser";
+import Home from "./Components/Home";
 
-function App() {
-  const [screen, setScreen] = useState("email"); // empezamos por email
+export default function App() {
+  const [screen, setScreen] = useState<"register" | "login" | "home">("login");
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async user => {
+      if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) setUserName(snap.data().nombre);
+        setScreen("home");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <div className="p-6">
-      {screen === "email" && <EmailLogin onSuccess={() => setScreen("register")} />}
-      {screen === "register" && <RegisterUser onSuccess={() => setScreen("pin")} />}
-      {screen === "pin" && (
-        <PinLogin
-          onSuccess={() => setScreen("welcome")}
-          onGoRegister={() => setScreen("register")}
-        />
-      )}
-      {screen === "welcome" && (
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-lg font-bold">Bienvenido 🎉</p>
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded"
-            onClick={async () => {
-              await auth.signOut();
-              setScreen("email");
-            }}
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      )}
+    <div>
+      {screen === "register" && <RegisterUser onSuccess={() => setScreen("login")} />}
+      {screen === "login" && <LoginUser onSuccess={() => setScreen("home")} onGoRegister={() => setScreen("register")} />}
+      {screen === "home" && <Home userName={userName} onLogout={() => setScreen("login")} />}
     </div>
   );
 }
-
-export default App;
-

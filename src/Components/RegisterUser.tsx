@@ -1,68 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { auth, db } from "../firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-type Props = { onSuccess: () => void };
+type Props = {
+  onSuccess: () => void;
+};
 
 export default function RegisterUser({ onSuccess }: Props) {
   const [name, setName] = useState("");
-  const [user, setUser] = useState<User | null>(null);
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [generatedPin, setGeneratedPin] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const generatePin = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (!firebaseUser) {
-        setIsNewUser(true);
-        setGeneratedPin(generatePin());
-        return;
-      }
-      const snap = await getDoc(doc(db, "users", firebaseUser.uid));
-      setIsNewUser(!snap.exists());
-      if (!snap.exists()) setGeneratedPin(generatePin());
-    });
+  const handleRegister = async () => {
+    if (!name || !email || !password) return alert("Completa todos los campos");
 
-    return () => unsubscribe();
-  }, []);
+  try {
+  const userCred = await createUserWithEmailAndPassword(auth, email, password);
+  const pin = generatePin();
 
-  const saveUser = async () => {
-    if (!user) return alert("Debes iniciar sesión primero");
-    if (!name) return alert("Completa tu nombre");
+  await setDoc(doc(db, "users", userCred.user.uid), {
+    nombre: name,
+    email,
+    pin,
+    createdAt: new Date(),
+  });
 
-    await setDoc(doc(db, "users", user.uid), {
-      nombre: name,
-      pin: generatedPin,
-      email: user.email,
-      createdAt: new Date(),
-    });
-
-    alert(`Usuario registrado! Tu PIN es ${generatedPin}`);
-    onSuccess();
+  alert(`Usuario registrado con éxito. Tu PIN: ${pin}`);
+  onSuccess();
+} catch (err: unknown) {
+  if (err instanceof Error) {
+    alert(err.message);
+  } else {
+    alert("Ocurrió un error desconocido");
+  }
+}
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {isNewUser ? (
-        <>
-          <input
-            type="text"
-            placeholder="Tu nombre"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="border p-2 rounded w-64"
-          />
-          <p>Tu PIN será generado automáticamente al registrarte</p>
-          <button onClick={saveUser} className="bg-green-500 text-white px-4 py-2 rounded">
-            Guardar
-          </button>
-        </>
-      ) : (
-        <p>Ya tienes cuenta, {user?.email}</p>
-      )}
+    <div className="flex flex-col gap-4 items-center p-6">
+      <input type="text" placeholder="Nombre" value={name} onChange={e => setName(e.target.value)} className="border p-2 rounded w-64" />
+      <input type="email" placeholder="Correo" value={email} onChange={e => setEmail(e.target.value)} className="border p-2 rounded w-64" />
+      <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="border p-2 rounded w-64" />
+      <button onClick={handleRegister} className="bg-green-500 text-white px-4 py-2 rounded">Registrar</button>
     </div>
   );
 }
