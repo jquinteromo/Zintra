@@ -23,7 +23,7 @@ export default function RegisterUser({ onSuccess }: Props) {
       setUser(firebaseUser);
 
       if (!firebaseUser) {
-        setIsNewUser(false);
+        setIsNewUser(true);
         setLoading(false);
         return;
       }
@@ -31,8 +31,6 @@ export default function RegisterUser({ onSuccess }: Props) {
       try {
         const ref = doc(db, "users", firebaseUser.uid);
         const snap = await getDoc(ref);
-
-        // ✅ Ahora depende solo de si existe el documento
         const isNew = !snap.exists();
         setIsNewUser(isNew);
 
