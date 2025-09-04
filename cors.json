@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://zintra-nine.vercel.app"],
+    "method": ["GET", "POST", "PUT", "DELETE"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

@@ -1,7 +1,4 @@
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { updateProfile } from "firebase/auth";
-import { getAuth } from "firebase/auth";
-
+import { getAuth, updateProfile } from "firebase/auth";
 import { useRef } from "react";
 import {
   MessageCircle,
@@ -11,43 +8,32 @@ import {
   UserRoundPlus,
   Pencil,
 } from "lucide-react";
+import { uploadImage } from "../../../../storage/upload"; // ajusta según tu estructura
+
 
 export default function Sidebar() {
-
-
-const auth = getAuth();
-
-  //Input oculto
+  const auth = getAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  //Funcion abrir pestaña previsulizacion
   const handleEditClick = () => {
     fileInputRef.current?.click();
   };
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !auth.currentUser) return;
+  const file = e.target.files?.[0];
+  if (!file || !auth.currentUser) return;
 
-    try {
-      const storage = getStorage();
-      const storageRef = ref(
-        storage,
-        `profilePictures/${auth.currentUser.uid}`
-      );
-      await uploadBytes(storageRef, file);
+  try {
+    const publicUrl = await uploadImage(file);
 
-      const url = await getDownloadURL(storageRef);
+    await updateProfile(auth.currentUser, { photoURL: publicUrl });
 
-      // Actualizar el usuario autenticado con la nueva foto
-      await updateProfile(auth.currentUser, { photoURL: url });
-
-      alert("Foto de perfil actualizada");
-    } catch (error) {
-      console.error(error);
-      alert("Error subiendo la foto");
-    }
-  };
+    alert("Foto de perfil actualizada");
+  } catch (error) {
+    console.error(error);
+    alert("Error subiendo la foto");
+  }
+};
 
   return (
     <div className="w-72 bg-[#0b0c10] border-r border-[#1f2126] h-screen text-white flex flex-col">
@@ -58,6 +44,7 @@ const auth = getAuth();
           <img
             className="h-10 w-10 object-contain"
             src="icon_zintra/icon_zintra.png"
+            alt="Zintra logo"
           />
           <p className="text-2xl font-bold text-yellow-300">Zintra</p>
         </div>
@@ -77,9 +64,8 @@ const auth = getAuth();
 
         {/* Perfil editable */}
         <div className="flex flex-col items-center text-center mb-6 group relative">
-          {/* Foto */}
-
-          <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 bg-[#1a1c20]/80 backdrop-blur-sm p-2 rounded-lg border border-[#2a2d33] shadow-md  transition-opacity duration-200">
+          {/* Botones de edición */}
+          <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 bg-[#1a1c20]/80 backdrop-blur-sm p-2 rounded-lg border border-[#2a2d33] shadow-md transition-opacity duration-200">
             <input
               type="file"
               ref={fileInputRef}
@@ -101,9 +87,10 @@ const auth = getAuth();
             </button>
           </div>
 
-          <div className="relative w-24 h-24 mt-6 rounded-full  mb-2 overflow-hidden">
+          {/* Foto de perfil */}
+          <div className="relative w-24 h-24 mt-6 rounded-full mb-2 overflow-hidden">
             <img
-               src={auth.currentUser?.photoURL || "photo_defect/Photodefect.png"}
+              src={auth.currentUser?.photoURL || "photo_defect/Photodefect.png"}
               alt="avatar"
               className="w-full h-full object-cover rounded-full cursor-pointer"
             />
@@ -126,8 +113,6 @@ const auth = getAuth();
               <Pencil size={10} />
             </button>
           </div>
-
-          {/* Descripción en burbuja */}
         </div>
 
         {/* Tabs */}
