@@ -38,7 +38,7 @@ export default function RegisterUser() {
       });
 
       alert(`Usuario registrado con éxito. Tu PIN: ${pin}`);
-      navigate("/login"); // redirige al login después del registro
+      navigate("/login");
     } catch (err: unknown) {
       if (err instanceof Error) {
         alert(err.message);

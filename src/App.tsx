@@ -10,9 +10,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   return (
     <Router>
-      <SessionGuard /> {/* Este redirige según el estado de sesión */}
       <div className="p-6">
         <Routes>
+          <Route path="/" element={<SessionGuard />} />
           <Route path="/login" element={<EmailLogin />} />
           <Route path="/register" element={<RegisterUser />} />
           <Route

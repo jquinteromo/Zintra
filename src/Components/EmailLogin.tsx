@@ -18,7 +18,7 @@ export default function EmailLogin() {
     try {
       await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/welcome"); // redirige al usuario autenticado
+      navigate("/welcome");
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error(err);

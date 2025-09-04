@@ -18,7 +18,7 @@ export default function Welcome() {
 
   const handleLogout = async () => {
     await auth.signOut();
-    navigate("/login"); // redirige al login después del logout
+    navigate("/login");
   };
 
   if (loading) return <p>Cargando...</p>;
