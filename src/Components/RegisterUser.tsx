@@ -14,34 +14,35 @@ export default function RegisterUser({ onSuccess }: Props) {
   const [user, setUser] = useState<User | null>(null);
   const [generatedPin, setGeneratedPin] = useState("");
 
-  // Función para generar un PIN aleatorio de 6 dígitos
-  const generatePin = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
+  const generatePin = () => Math.floor(100000 + Math.random() * 900000).toString();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
-      if (firebaseUser) {
-        try {
-          const ref = doc(db, "users", firebaseUser.uid);
-          const snap = await getDoc(ref);
-
-          if (snap.exists()) {
-            setIsNewUser(false);
-          } else {
-            setIsNewUser(true);
-            const newPin = generatePin();
-            setGeneratedPin(newPin);
-          }
-        } catch (err) {
-          console.error("Error leyendo Firestore:", err);
-          setIsNewUser(true);
-        }
+      if (!firebaseUser) {
+        setIsNewUser(false);
+        setLoading(false);
+        return;
       }
 
-      setLoading(false); 
+      try {
+        const ref = doc(db, "users", firebaseUser.uid);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          setIsNewUser(false);
+        } else {
+          setIsNewUser(true);
+          setGeneratedPin(generatePin());
+        }
+      } catch (err) {
+        console.error("Error leyendo Firestore:", err);
+        setIsNewUser(true);
+        setGeneratedPin(generatePin());
+      }
+
+      setLoading(false);
     });
 
     return () => unsubscribe();

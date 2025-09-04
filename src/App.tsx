@@ -5,15 +5,15 @@ import PinLogin from './Components/PinLogin';
 import { useState } from 'react';
 
 function App() {
+  const [screen, setScreen] = useState("register"); 
 
-    const [screen, setScreen] = useState("register"); 
   return (
-   <div className="p-6">
-      {screen ===  "phone" && <EmailLogin onSuccess={() => setScreen("register")} />}
+    <div className="p-6">
+      {screen === "phone" && <EmailLogin onSuccess={() => setScreen("register")} />}
       {screen === "register" && <RegisterUser onSuccess={() => setScreen("pin")} />}
       {screen === "pin" && <PinLogin />}
     </div>
   )
 }
 
-export default App
+export default App;
