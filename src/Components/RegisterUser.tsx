@@ -7,35 +7,37 @@ type Props = {
   onSuccess: () => void;
 };
 
-export default function RegisterUser({ onSuccess }:Props) {
+export default function RegisterUser({ onSuccess }: Props) {
   const [name, setName] = useState("");
   const [pin, setPin] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
-  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
       if (firebaseUser) {
-        const ref = doc(db, "users", firebaseUser.uid);
-        const snap = await getDoc(ref);
+        try {
+          const ref = doc(db, "users", firebaseUser.uid);
+          const snap = await getDoc(ref);
 
-        if (snap.exists()) {
-       
-          setIsNewUser(false);
-        } else {
-          
-          setIsNewUser(true);
+          if (snap.exists()) {
+            setIsNewUser(false);
+          } else {
+            setIsNewUser(true);
+          }
+        } catch (err) {
+          console.error("Error leyendo Firestore:", err);
+          setIsNewUser(true); 
         }
       }
 
-      setLoading(false);
+      setLoading(false); 
     });
 
-    return () => unsubscribe(); 
+    return () => unsubscribe();
   }, []);
 
   const saveUser = async () => {
@@ -53,14 +55,14 @@ export default function RegisterUser({ onSuccess }:Props) {
       await setDoc(doc(db, "users", user.uid), {
         nombre: name,
         pin: pin,
-          email: user.email,
+        email: user.email,
         createdAt: new Date(),
       });
+      setIsNewUser(false);
       onSuccess();
       alert("Usuario registrado con éxito");
-      setIsNewUser(false);
     } catch (err) {
-      console.error(err);
+      console.error("Error guardando usuario:", err);
       alert("Error guardando usuario");
     }
   };
@@ -93,7 +95,7 @@ export default function RegisterUser({ onSuccess }:Props) {
           </button>
         </>
       ) : (
-        <p>Ya tienes cuenta, bienvenido {user?.phoneNumber}</p>
+        <p>Ya tienes cuenta, bienvenido {user?.email}</p>
       )}
     </div>
   );
