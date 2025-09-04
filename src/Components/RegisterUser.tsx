@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import {
   createUserWithEmailAndPassword,
@@ -7,15 +8,11 @@ import {
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-type Props = {
-  onSuccess: () => void;
-  onGoAuth: () => void;
-};
-
-export default function RegisterUser({ onSuccess, onGoAuth }: Props) {
+export default function RegisterUser() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const generatePin = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
@@ -41,7 +38,7 @@ export default function RegisterUser({ onSuccess, onGoAuth }: Props) {
       });
 
       alert(`Usuario registrado con éxito. Tu PIN: ${pin}`);
-      onSuccess();
+      navigate("/login"); // redirige al login después del registro
     } catch (err: unknown) {
       if (err instanceof Error) {
         alert(err.message);
@@ -81,7 +78,7 @@ export default function RegisterUser({ onSuccess, onGoAuth }: Props) {
         Registrar
       </button>
       <button
-        onClick={onGoAuth}
+        onClick={() => navigate("/login")}
         className="text-sm text-blue-600 underline mt-2"
       >
         ¿Ya tienes cuenta? Inicia sesión

@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 
-type Props = {
-  onLogout: () => void;
-};
-
-export default function Welcome({ onLogout }: Props) {
+export default function Welcome() {
   const [user, setUser] = useState(auth.currentUser);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(firebaseUser => {
@@ -20,7 +18,7 @@ export default function Welcome({ onLogout }: Props) {
 
   const handleLogout = async () => {
     await auth.signOut();
-    onLogout();
+    navigate("/login"); // redirige al login después del logout
   };
 
   if (loading) return <p>Cargando...</p>;
@@ -28,12 +26,12 @@ export default function Welcome({ onLogout }: Props) {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <p className="text-lg font-bold">Welcome {user.email}!</p>
+      <p className="text-lg font-bold">¡Bienvenido {user.email}!</p>
       <button
         onClick={handleLogout}
         className="bg-red-500 text-white px-4 py-2 rounded"
       >
-        Logout
+        Cerrar sesión
       </button>
     </div>
   );

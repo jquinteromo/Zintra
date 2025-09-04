@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import {
   signInWithEmailAndPassword,
@@ -6,14 +7,10 @@ import {
   browserLocalPersistence
 } from "firebase/auth";
 
-type Props = {
-  onSuccess: () => void;
-  onGoRegister: () => void;
-};
-
-export default function EmailLogin({ onSuccess, onGoRegister }: Props) {
+export default function EmailLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     if (!email || !password) return alert("Complete all fields");
@@ -21,7 +18,7 @@ export default function EmailLogin({ onSuccess, onGoRegister }: Props) {
     try {
       await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
-      onSuccess();
+      navigate("/welcome"); // redirige al usuario autenticado
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error(err);
@@ -56,7 +53,7 @@ export default function EmailLogin({ onSuccess, onGoRegister }: Props) {
         Login
       </button>
       <button
-        onClick={onGoRegister}
+        onClick={() => navigate("/register")}
         className="text-sm text-blue-600 underline mt-2"
       >
         Don't have an account? Register
