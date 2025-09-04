@@ -1,17 +1,24 @@
 import './App.css'
-import EmailLogin from './Components/EmailLogin';
 import RegisterUser from './Components/RegisterUser';
 import PinLogin from './Components/PinLogin';
+import LogoutButton from './Components/LogoutButton';
 import { useState } from 'react';
 
 function App() {
-  const [screen, setScreen] = useState("register"); 
+  const [screen, setScreen] = useState<"login" | "register" | "welcome">("login");
+
+  const handleLogout = () => setScreen("login");
 
   return (
     <div className="p-6">
-      {screen === "phone" && <EmailLogin onSuccess={() => setScreen("register")} />}
-      {screen === "register" && <RegisterUser onSuccess={() => setScreen("pin")} />}
-      {screen === "pin" && <PinLogin />}
+      {screen === "login" && <PinLogin onSuccess={() => setScreen("welcome")} onGoRegister={() => setScreen("register")} />}
+      {screen === "register" && <RegisterUser onSuccess={() => setScreen("login")} />}
+      {screen === "welcome" && (
+        <>
+          <h1 className="text-xl font-bold mb-4">Bienvenido 🎉</h1>
+          <LogoutButton onLogout={handleLogout} />
+        </>
+      )}
     </div>
   )
 }

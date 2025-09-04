@@ -1,76 +1,51 @@
 import { useState, useEffect } from "react";
-import { auth, db } from "../firebase"; 
+import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged, type User } from "firebase/auth";
 
-type Props = {
-  onSuccess: () => void;
-};
+type Props = { onSuccess: () => void };
 
 export default function RegisterUser({ onSuccess }: Props) {
   const [name, setName] = useState("");
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [isNewUser, setIsNewUser] = useState(false);
   const [generatedPin, setGeneratedPin] = useState("");
 
-  const generatePin = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
+  const generatePin = () => Math.floor(100000 + Math.random() * 900000).toString();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-
       if (!firebaseUser) {
         setIsNewUser(true);
-        setLoading(false);
+        setGeneratedPin(generatePin());
         return;
       }
-
-      try {
-        const ref = doc(db, "users", firebaseUser.uid);
-        const snap = await getDoc(ref);
-        const isNew = !snap.exists();
-        setIsNewUser(isNew);
-
-        if (isNew) setGeneratedPin(generatePin());
-      } catch (err) {
-        console.error("Error leyendo Firestore:", err);
-        setIsNewUser(true);
-        setGeneratedPin(generatePin());
-      }
-
-      setLoading(false);
+      const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+      setIsNewUser(!snap.exists());
+      if (!snap.exists()) setGeneratedPin(generatePin());
     });
 
     return () => unsubscribe();
   }, []);
 
   const saveUser = async () => {
-    if (!user) return alert("No hay usuario autenticado");
+    if (!user) return alert("Debes iniciar sesión primero");
     if (!name) return alert("Completa tu nombre");
 
-    try {
-      await setDoc(doc(db, "users", user.uid), {
-        nombre: name,
-        pin: generatedPin,
-        email: user.email,
-        createdAt: new Date(),
-      });
-      setIsNewUser(false);
-      onSuccess();
-      alert(`Usuario registrado con éxito. Tu PIN es: ${generatedPin}`);
-    } catch (err) {
-      console.error("Error guardando usuario:", err);
-      alert("Error guardando usuario");
-    }
+    await setDoc(doc(db, "users", user.uid), {
+      nombre: name,
+      pin: generatedPin,
+      email: user.email,
+      createdAt: new Date(),
+    });
+
+    alert(`Usuario registrado! Tu PIN es ${generatedPin}`);
+    onSuccess();
   };
 
-  if (loading) return <p>Cargando...</p>;
-
   return (
-    <div className="p-6 flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4">
       {isNewUser ? (
         <>
           <input
@@ -81,15 +56,12 @@ export default function RegisterUser({ onSuccess }: Props) {
             className="border p-2 rounded w-64"
           />
           <p>Tu PIN será generado automáticamente al registrarte</p>
-          <button
-            onClick={saveUser}
-            className="bg-green-500 text-white px-4 py-2 rounded"
-          >
+          <button onClick={saveUser} className="bg-green-500 text-white px-4 py-2 rounded">
             Guardar
           </button>
         </>
       ) : (
-        <p>Ya tienes cuenta, bienvenido {user?.email}</p>
+        <p>Ya tienes cuenta, {user?.email}</p>
       )}
     </div>
   );
