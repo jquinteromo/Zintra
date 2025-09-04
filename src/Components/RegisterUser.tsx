@@ -9,10 +9,15 @@ type Props = {
 
 export default function RegisterUser({ onSuccess }: Props) {
   const [name, setName] = useState("");
-  const [pin, setPin] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [generatedPin, setGeneratedPin] = useState("");
+
+  // Función para generar un PIN aleatorio de 6 dígitos
+  const generatePin = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -27,10 +32,12 @@ export default function RegisterUser({ onSuccess }: Props) {
             setIsNewUser(false);
           } else {
             setIsNewUser(true);
+            const newPin = generatePin();
+            setGeneratedPin(newPin);
           }
         } catch (err) {
           console.error("Error leyendo Firestore:", err);
-          setIsNewUser(true); 
+          setIsNewUser(true);
         }
       }
 
@@ -41,26 +48,19 @@ export default function RegisterUser({ onSuccess }: Props) {
   }, []);
 
   const saveUser = async () => {
-    if (!user) {
-      alert("No hay usuario autenticado");
-      return;
-    }
-
-    if (!name || !pin) {
-      alert("Completa todos los campos");
-      return;
-    }
+    if (!user) return alert("No hay usuario autenticado");
+    if (!name) return alert("Completa tu nombre");
 
     try {
       await setDoc(doc(db, "users", user.uid), {
         nombre: name,
-        pin: pin,
+        pin: generatedPin,
         email: user.email,
         createdAt: new Date(),
       });
       setIsNewUser(false);
       onSuccess();
-      alert("Usuario registrado con éxito");
+      alert(`Usuario registrado con éxito. Tu PIN es: ${generatedPin}`);
     } catch (err) {
       console.error("Error guardando usuario:", err);
       alert("Error guardando usuario");
@@ -80,13 +80,7 @@ export default function RegisterUser({ onSuccess }: Props) {
             onChange={(e) => setName(e.target.value)}
             className="border p-2 rounded w-64"
           />
-          <input
-            type="password"
-            placeholder="Elige un PIN"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            className="border p-2 rounded w-64"
-          />
+          <p>Tu PIN será generado automáticamente al registrarte</p>
           <button
             onClick={saveUser}
             className="bg-green-500 text-white px-4 py-2 rounded"

@@ -14,7 +14,6 @@ export default function PinLogin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Espera a que el usuario esté autenticado
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         try {
