@@ -16,7 +16,7 @@ export default function SessionGuard() {
       setChecking(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe(); 
   }, [navigate]);
 
   if (checking) return <p>Cargando sesión...</p>;

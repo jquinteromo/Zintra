@@ -10,7 +10,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   return (
     <Router>
-      <div className="p-6">
+      <div className="">
         <Routes>
           <Route path="/" element={<SessionGuard />} />
           <Route path="/login" element={<EmailLogin />} />

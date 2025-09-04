@@ -1,45 +1,156 @@
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { updateProfile } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
-export default function ChatWindow() {
+import { useRef } from "react";
+import {
+  MessageCircle,
+  UserRound,
+  Bolt,
+  UsersRound,
+  UserRoundPlus,
+  Pencil,
+} from "lucide-react";
 
+export default function Sidebar() {
+
+
+const auth = getAuth();
+
+  //Input oculto
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  //Funcion abrir pestaña previsulizacion
+  const handleEditClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !auth.currentUser) return;
+
+    try {
+      const storage = getStorage();
+      const storageRef = ref(
+        storage,
+        `profilePictures/${auth.currentUser.uid}`
+      );
+      await uploadBytes(storageRef, file);
+
+      const url = await getDownloadURL(storageRef);
+
+      // Actualizar el usuario autenticado con la nueva foto
+      await updateProfile(auth.currentUser, { photoURL: url });
+
+      alert("Foto de perfil actualizada");
+    } catch (error) {
+      console.error(error);
+      alert("Error subiendo la foto");
+    }
+  };
 
   return (
-<div className="flex flex-col justify-between h-screen w-full bg-gray-50">
-  {/* Encabezado del chat */}
-  <div className="p-4 border-b bg-white">
-    <h2 className="text-lg font-semibold">Chat with Alex Chen</h2>
-    <p className="text-sm text-gray-500">Last seen: 2:30 PM</p>
-  </div>
+    <div className="w-72 bg-[#0b0c10] border-r border-[#1f2126] h-screen text-white flex flex-col">
+      {/* Scrollable content */}
+      <div className="overflow-y-auto flex-1 p-4 border-b border-[#1f2126] scrollbar-hide">
+        {/* Logo Zintra */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <img
+            className="h-10 w-10 object-contain"
+            src="icon_zintra/icon_zintra.png"
+          />
+          <p className="text-2xl font-bold text-yellow-300">Zintra</p>
+        </div>
 
-  {/* Mensajes */}
-  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-    <div className="flex flex-col">
-      <div className="text-sm text-gray-600 mb-1">Alex Chen (2:29 PM)</div>
-      <div className="bg-white p-3 rounded shadow w-fit max-w-md">Hey, are we still on for the meeting tomorrow?</div>
-    </div>
-    <div className="flex flex-col items-end">
-      <div className="text-sm text-gray-600 mb-1">John Doe (2:29 PM)</div>
-      <div className="bg-blue-500 text-white p-3 rounded shadow w-fit max-w-md">Yes, absolutely! I have everything prepared.</div>
-    </div>
-    <div className="flex flex-col">
-      <div className="text-sm text-gray-600 mb-1">Alex Chen (2:30 PM)</div>
-      <div className="bg-white p-3 rounded shadow w-fit max-w-md">Perfect. Should we meet at the usual conference room?</div>
-    </div>
-    <div className="flex flex-col items-end">
-      <div className="text-sm text-gray-600 mb-1">John Doe (2:30 PM)</div>
-      <div className="bg-blue-500 text-white p-3 rounded shadow w-fit max-w-md">That works for me. See you at 10 AM sharp.</div>
-    </div>
-  </div>
+        {/* Nav buttons */}
+        <div className="flex justify-center mb-6 gap-2">
+          <button className="flex items-center gap-2 text-[#858383] hover:bg-[#2a2d33] px-3 py-2 rounded text-sm font-medium">
+            <MessageCircle size={18} /> Chats
+          </button>
+          <button className="flex items-center gap-2 text-[#facc15] hover:bg-[#2a2d33] px-3 py-2 rounded text-sm font-medium">
+            <UserRound size={18} /> Profile
+          </button>
+          <button className="flex items-center gap-2 text-[#858383] hover:bg-[#2a2d33] px-3 py-2 rounded text-sm font-medium">
+            <Bolt size={18} /> Settings
+          </button>
+        </div>
 
-  {/* Input de mensaje */}
-  <div className="p-4 border-t bg-white">
-    <input
-      type="text"
-      placeholder="Type a message..."
-      className="w-full border rounded px-4 py-2 focus:outline-none focus:ring"
-    />
-  </div>
-</div>
+        {/* Perfil editable */}
+        <div className="flex flex-col items-center text-center mb-6 group relative">
+          {/* Foto */}
 
+          <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 bg-[#1a1c20]/80 backdrop-blur-sm p-2 rounded-lg border border-[#2a2d33] shadow-md  transition-opacity duration-200">
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              accept="image/*"
+              onChange={handlePhotoChange}
+            />
+            <button
+              onClick={handleEditClick}
+              className="text-sm text-white hover:text-black hover:bg-yellow-300 px-3 py-1 rounded"
+            >
+              Editar
+            </button>
+            <button className="text-sm text-white hover:text-black hover:bg-yellow-300 px-3 py-1 rounded">
+              Ver
+            </button>
+            <button className="text-sm text-red-400 hover:text-white hover:bg-red-600 px-3 py-1 rounded">
+              Eliminar
+            </button>
+          </div>
 
+          <div className="relative w-24 h-24 mt-6 rounded-full  mb-2 overflow-hidden">
+            <img
+               src={auth.currentUser?.photoURL || "photo_defect/Photodefect.png"}
+              alt="avatar"
+              className="w-full h-full object-cover rounded-full cursor-pointer"
+            />
+          </div>
+
+          {/* Nombre */}
+          <div className="relative mt-8 group">
+            <h2 className="text-xl font-semibold text-white">
+              Jaider Quintero
+            </h2>
+            <button className="absolute top-0 right-[-24px] bg-[#1a1c20]/80 backdrop-blur-sm p-1.5 rounded-full border border-[#2a2d33] text-yellow-300 hover:bg-yellow-300 hover:text-black transition-all duration-200 opacity-0 group-hover:opacity-100">
+              <Pencil size={12} />
+            </button>
+          </div>
+
+          {/* Rol */}
+          <div className="relative mt-1 group">
+            <p className="text-sm text-gray-400">Software Engineer</p>
+            <button className="absolute top-0 right-[-24px] bg-[#1a1c20]/80 backdrop-blur-sm p-1.5 rounded-full border border-[#2a2d33] text-yellow-300 hover:bg-yellow-300 hover:text-black transition-all duration-200 opacity-0 group-hover:opacity-100">
+              <Pencil size={10} />
+            </button>
+          </div>
+
+          {/* Descripción en burbuja */}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex justify-around mb-4 mt-12">
+          <button className="flex flex-row items-center border border-white/35 gap-1 text-sm text-gray-500 px-3 py-2 rounded">
+            <UserRoundPlus size={16} /> Discover
+          </button>
+          <button className="flex flex-row items-center border border-white/35 gap-1 text-sm text-gray-500 px-3 py-2 rounded-md">
+            <UsersRound size={16} /> Friends (4)
+          </button>
+        </div>
+
+        {/* Seguridad */}
+        <div className="text-gray-500 bg-white/25 mt-12 p-4 rounded-lg">
+          <h1 className="font-semibold text-white mb-1">Security</h1>
+          <p className="text-sm">End-to-end encrypted</p>
+        </div>
+      </div>
+
+      {/* Footer fijo */}
+      <div className="p-4 border-t border-[#1f2126] text-xs text-gray-500">
+        Zintra © 2025
+      </div>
+    </div>
   );
 }

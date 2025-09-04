@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../../firebase";
-import ChatWindow from "./ChatWindow";
-import Sidebar from "./Sidebar";
+import ChatWindow from "./Sidebar";
+import Sidebar from "./ChatWindow";
 
 
 export default function Welcome() {
@@ -28,11 +28,11 @@ export default function Welcome() {
   if (!user) return <p>No estás autenticado</p>;
 
   return (
-    <div className="flex flex-col items-center gap-4">
-     <div className="flex h-screen">
+    <div className="flex flex-row    w-full bg-black"> 
+  <ChatWindow /> 
        <Sidebar /> 
-       <ChatWindow /> 
-</div>
+     
+
       <button
         onClick={handleLogout}
         className="bg-red-500 text-white px-4 py-2 rounded"
