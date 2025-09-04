@@ -2,7 +2,8 @@
 import { supabase } from '../lib/supabase';
 
 export async function uploadImage(file: File) {
-  const filePath = `icons/${file.name}`;
+  const filePath = file.name; // sin carpeta
+
 
   const {  error } = await supabase.storage
     .from('zintra-assets')
