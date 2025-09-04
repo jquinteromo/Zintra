@@ -14,7 +14,9 @@ export default function RegisterUser({ onSuccess }: Props) {
   const [user, setUser] = useState<User | null>(null);
   const [generatedPin, setGeneratedPin] = useState("");
 
-  const generatePin = () => Math.floor(100000 + Math.random() * 900000).toString();
+  const generatePin = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -30,12 +32,11 @@ export default function RegisterUser({ onSuccess }: Props) {
         const ref = doc(db, "users", firebaseUser.uid);
         const snap = await getDoc(ref);
 
-        if (snap.exists()) {
-          setIsNewUser(false);
-        } else {
-          setIsNewUser(true);
-          setGeneratedPin(generatePin());
-        }
+        // ✅ Ahora depende solo de si existe el documento
+        const isNew = !snap.exists();
+        setIsNewUser(isNew);
+
+        if (isNew) setGeneratedPin(generatePin());
       } catch (err) {
         console.error("Error leyendo Firestore:", err);
         setIsNewUser(true);
