@@ -14,9 +14,6 @@ export default function RegisterUser() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const generatePin = () =>
-    Math.floor(100000 + Math.random() * 900000).toString();
-
   const handleRegister = async () => {
     if (!name || !email || !password)
       return alert("Completa todos los campos");
@@ -28,16 +25,14 @@ export default function RegisterUser() {
         email,
         password
       );
-      const pin = generatePin();
 
       await setDoc(doc(db, "users", userCred.user.uid), {
         nombre: name,
         email,
-        pin,
         createdAt: new Date()
       });
 
-      alert(`Usuario registrado con éxito. Tu PIN: ${pin}`);
+      alert("Usuario registrado con éxito");
       navigate("/login");
     } catch (err: unknown) {
       if (err instanceof Error) {
