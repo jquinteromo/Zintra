@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { getAuth } from 'firebase/auth';
 
 export async function uploadImage(file: File) {
@@ -9,22 +9,31 @@ export async function uploadImage(file: File) {
   // 🔐 Obtener token de Firebase
   const token = await user.getIdToken();
 
-  // 🔄 Sincronizar sesión con Supabase
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: token,
-    refresh_token: token,
-  });
+  // 🔄 Crear cliente Supabase con header Authorization
+  const supabase = createClient(
+    'https://vjgnhuivftfesgcjdzrp.supabase.co',
+    'public-anon-key', // Usa variable de entorno en producción
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    }
+  );
 
+  // 🧪 Validar usuario Supabase
   const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError) console.error("Error obteniendo usuario Supabase:", userError);
-  else console.log("Usuario Supabase:", userData);
+  if (userError) {
+    console.error("Error obteniendo usuario Supabase:", userError);
+  } else {
+    console.log("Usuario Supabase:", userData?.user?.id);
+  }
 
-  if (sessionError) throw sessionError;
-
-  // 🧠 Ruta con carpeta opcional
+  // 🧠 Ruta con carpeta opcional y UID
   const filePath = `avatars/${user.uid}-${file.name}`;
 
-  // 📤 Subir imagen
+  // 📤 Subir imagen al bucket zintra-assets
   const { error: uploadError } = await supabase.storage
     .from('zintra-assets')
     .upload(filePath, file, {
