@@ -2,7 +2,7 @@ import PrivateRoute from "./PrivateRoute";
 import "./App.css";
 import EmailLogin from "./Components/EmailLogin";
 import RegisterUser from "./Components/RegisterUser";
-import Welcome from "./Components/Welcome";
+import Welcome from "./Components/Welcome/components/Welcome";
 import SessionGuard from "./SessionGuard";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
