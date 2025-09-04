@@ -1,7 +1,7 @@
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import {
   RecaptchaVerifier,
@@ -13,34 +13,45 @@ import {
 declare global {
   interface Window {
     recaptchaVerifier: RecaptchaVerifier;
+    recaptchaWidgetId: string;
   }
 }
+
+declare const grecaptcha: {
+  reset: (widgetId: string) => void;
+};
 
 type Props = {
   onSuccess: () => void;
 };
 
-
-export default function PhoneLogin({ onSuccess }:Props) {
+export default function PhoneLogin({ onSuccess }: Props) {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmationResult | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
-  const setupRecaptcha = () => {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: () => console.log("reCAPTCHA listo"),
-      }
-    );
-  };
+  
+  useEffect(() => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "invisible",
+          callback: () => console.log("reCAPTCHA verificado"),
+        }
+      );
+
+  
+      window.recaptchaVerifier.render().then((widgetId: number) => {
+        window.recaptchaWidgetId = widgetId.toString();
+      });
+    }
+  }, []);
 
   const sendCode = async () => {
-    setupRecaptcha();
     try {
       const confirmation = await signInWithPhoneNumber(
         auth,
@@ -50,11 +61,16 @@ export default function PhoneLogin({ onSuccess }:Props) {
       setConfirmationResult(confirmation);
       alert("SMS enviado!");
     } catch (err) {
-      console.error(err);
-      alert("Error enviando SMS");
+      console.error("Firebase error:", err);
+
+     
+      if (window.recaptchaWidgetId) {
+        grecaptcha.reset(window.recaptchaWidgetId);
+      }
+
+      alert("Error enviando SMS, intenta de nuevo.");
     }
   };
-
 
   const verifyCode = async () => {
     if (!confirmationResult) {
@@ -63,8 +79,8 @@ export default function PhoneLogin({ onSuccess }:Props) {
     }
     try {
       const result = await confirmationResult.confirm(code);
-      setUser(result.user); 
-      onSuccess();
+      setUser(result.user);
+      onSuccess(); 
       alert("Login exitoso");
     } catch (err) {
       console.error(err);
@@ -77,7 +93,7 @@ export default function PhoneLogin({ onSuccess }:Props) {
       {!user ? (
         <>
           <PhoneInput
-            country={"co"} 
+            country={"co"}
             value={phone}
             onChange={(value) => setPhone("+" + value)}
           />
