@@ -5,9 +5,9 @@ import { doc, setDoc } from "firebase/firestore";
 
 type Props = {
   onSuccess: () => void;
+  onGoAuth: () => void;
 };
-
-export default function RegisterUser({ onSuccess }: Props) {
+export default function RegisterUser({ onSuccess, onGoAuth}: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,6 +45,7 @@ export default function RegisterUser({ onSuccess }: Props) {
       <input type="email" placeholder="Correo" value={email} onChange={e => setEmail(e.target.value)} className="border p-2 rounded w-64" />
       <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="border p-2 rounded w-64" />
       <button onClick={handleRegister} className="bg-green-500 text-white px-4 py-2 rounded">Registrar</button>
+      <button onClick={onGoAuth} className="text-sm text-blue-600 underline mt-2">Don't have an account? onGoAuth</button>
     </div>
   );
 }

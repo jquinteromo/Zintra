@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="p-6">
       {screen === 'login' && <EmailLogin onSuccess={() => setScreen('welcome')} onGoRegister={() => setScreen('register')} />}
-      {screen === 'register' && <RegisterUser onSuccess={() => setScreen('login')} />}
+      {screen === 'register' && <RegisterUser onSuccess={() => setScreen('login')}  onGoAuth={() => setScreen('login')}/>}
       {screen === 'welcome' && <Welcome onLogout={() => setScreen('login')} />}
     </div>
   );
