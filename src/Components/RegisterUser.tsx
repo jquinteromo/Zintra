@@ -53,7 +53,7 @@ export default function RegisterUser({ onSuccess }:Props) {
       await setDoc(doc(db, "users", user.uid), {
         nombre: name,
         pin: pin,
-        phone: user.phoneNumber,
+          email: user.email,
         createdAt: new Date(),
       });
       onSuccess();
