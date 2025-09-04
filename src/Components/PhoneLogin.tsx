@@ -16,7 +16,12 @@ declare global {
   }
 }
 
-export default function PhoneLogin() {
+type Props = {
+  onSuccess: () => void;
+};
+
+
+export default function PhoneLogin({ onSuccess }:Props) {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [confirmationResult, setConfirmationResult] =
@@ -59,6 +64,7 @@ export default function PhoneLogin() {
     try {
       const result = await confirmationResult.confirm(code);
       setUser(result.user); 
+      onSuccess();
       alert("Login exitoso");
     } catch (err) {
       console.error(err);

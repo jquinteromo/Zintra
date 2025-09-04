@@ -3,7 +3,11 @@ import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged, type User } from "firebase/auth";
 
-export default function RegisterUser() {
+type Props = {
+  onSuccess: () => void;
+};
+
+export default function RegisterUser({ onSuccess }:Props) {
   const [name, setName] = useState("");
   const [pin, setPin] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
@@ -52,6 +56,7 @@ export default function RegisterUser() {
         phone: user.phoneNumber,
         createdAt: new Date(),
       });
+      onSuccess();
       alert("Usuario registrado con éxito");
       setIsNewUser(false);
     } catch (err) {
