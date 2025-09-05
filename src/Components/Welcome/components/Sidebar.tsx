@@ -27,22 +27,24 @@ export default function Sidebar() {
   const handleEditClick = () => {
     fileInputRef.current?.click();
   };
-
 const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
   if (!file || !auth.currentUser) return;
 
   try {
-    const publicUrl = await uploadImage(file); // 👈 solo un argumento
+    const publicUrl = await uploadImage(file);
+
+    console.time("firebase-updateProfile");
     await updateProfile(auth.currentUser, { photoURL: publicUrl });
-    setPhotoURL(publicUrl); // 👈 para que refresque la vista sin recargar
+    console.timeEnd("firebase-updateProfile");
+
+    setPhotoURL(publicUrl);
     alert("Foto de perfil actualizada");
   } catch (error) {
     console.error(error);
     alert("Error subiendo la foto");
   }
 };
-
 
   return (
     <div className="w-72 bg-[#0b0c10] border-r border-[#1f2126] h-screen text-white flex flex-col">
