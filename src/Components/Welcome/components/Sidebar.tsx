@@ -1,8 +1,9 @@
 import { getAuth, updateProfile } from "firebase/auth";
 import { useRef, useState, useEffect } from "react";
 import { uploadImage } from "../../../../storage/cloudinaryUpload";
-
-
+import { doc, setDoc ,getDoc} from "firebase/firestore";
+import { db } from "../../../firebase";
+import imageCompression from 'browser-image-compression';
 
 import {
   MessageCircle,
@@ -14,10 +15,29 @@ import {
 } from "lucide-react";
 
 export default function Sidebar() {
+
   const auth = getAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>("Usuario");
+
+  // ⚡ Traer datos de Firestore
+  const fetchUserData = async () => {
+    if (!auth.currentUser) return;
+
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      setDisplayName(data.nombre || "Usuario");
+      setPhotoURL(data.photoURL || null);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     if (auth.currentUser) {
@@ -29,24 +49,52 @@ export default function Sidebar() {
   const handleEditClick = () => {
     fileInputRef.current?.click();
   };
-const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file || !auth.currentUser) return;
 
-  try {
-    const publicUrl = await uploadImage(file);
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !auth.currentUser) return;
 
-    console.time("firebase-updateProfile");
-    await updateProfile(auth.currentUser, { photoURL: publicUrl });
-    console.timeEnd("firebase-updateProfile");
+    try {
+      // 🔹 Comprimir imagen antes de subir
+      const compressedFile = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      });
 
-    setPhotoURL(publicUrl);
-    alert("Foto de perfil actualizada");
-  } catch (error) {
-    console.error(error);
-    alert("Error subiendo la foto");
+      // 🔹 Subir imagen a Cloudinary
+      console.time("cloudinary-upload");
+      const publicUrl = await uploadImage(compressedFile);
+      console.timeEnd("cloudinary-upload");
+
+      // 🔹 Actualizar perfil de Firebase Auth
+      console.time("firebase-updateProfile");
+      await updateProfile(auth.currentUser, { photoURL: publicUrl });
+
+      // 🔹 Actualizar Firestore sin borrar otros campos
+      await setDoc(
+        doc(db, "users", auth.currentUser.uid),
+        { photoURL: publicUrl },
+        { merge: true }
+      );
+      console.timeEnd("firebase-updateProfile");
+
+      setPhotoURL(publicUrl);
+      alert("Foto de perfil actualizada");
+    } catch (error) {
+      console.error(error);
+      alert("Error subiendo la foto");
+    }
+  };
+
+  if (!auth.currentUser) {
+    console.log("No hay usuario autenticado");
+    return null;
   }
-};
+
+
+
+
 
   return (
     <div className="w-72 bg-[#0b0c10] border-r border-[#1f2126] h-screen text-white flex flex-col">
