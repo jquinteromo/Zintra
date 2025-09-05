@@ -1,6 +1,7 @@
 import { getAuth, updateProfile } from "firebase/auth";
 import { useRef, useState, useEffect } from "react";
-import { uploadImage } from "../../../../storage/upload";
+import { uploadImage } from "../../../../storage/cloudinaryUpload";
+
 import {
   MessageCircle,
   UserRound,
@@ -32,14 +33,16 @@ const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   if (!file || !auth.currentUser) return;
 
   try {
-    const publicUrl = await uploadImage(file, auth.currentUser.uid);
+    const publicUrl = await uploadImage(file); // 👈 solo un argumento
     await updateProfile(auth.currentUser, { photoURL: publicUrl });
+    setPhotoURL(publicUrl); // 👈 para que refresque la vista sin recargar
     alert("Foto de perfil actualizada");
   } catch (error) {
     console.error(error);
     alert("Error subiendo la foto");
   }
 };
+
 
   return (
     <div className="w-72 bg-[#0b0c10] border-r border-[#1f2126] h-screen text-white flex flex-col">
