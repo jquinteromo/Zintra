@@ -1,7 +1,7 @@
 import { getAuth, updateProfile } from "firebase/auth";
 import { useRef, useState, useEffect } from "react";
 import { uploadImage } from "../../../../storage/cloudinaryUpload";
-import { resizeAndCompressImage } from "../../../utils/imageUtils";
+
 
 
 import {
@@ -34,9 +34,7 @@ const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   if (!file || !auth.currentUser) return;
 
   try {
-   const compressedFile = await resizeAndCompressImage(file);
-
-    const publicUrl = await uploadImage(compressedFile);
+    const publicUrl = await uploadImage(file);
 
     console.time("firebase-updateProfile");
     await updateProfile(auth.currentUser, { photoURL: publicUrl });
