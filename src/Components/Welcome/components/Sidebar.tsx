@@ -50,42 +50,52 @@ export default function Sidebar() {
     fileInputRef.current?.click();
   };
 
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !auth.currentUser) return;
+const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file || !auth.currentUser) return;
 
-    try {
-      // 🔹 Comprimir imagen antes de subir
-      const compressedFile = await imageCompression(file, {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1024,
-        useWebWorker: true,
-      });
+  try {
+    // 🔹 Comprimir imagen antes de subir
+    const compressedFile = await imageCompression(file, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+      fileType: "image/jpeg",
+    });
 
-      // 🔹 Subir imagen a Cloudinary
-      console.time("cloudinary-upload");
-      const publicUrl = await uploadImage(compressedFile);
-      console.timeEnd("cloudinary-upload");
+    console.log("Tamaño original:", file.size / 1024, "KB");
+    console.log("Tamaño comprimido:", compressedFile.size / 1024, "KB");
 
-      // 🔹 Actualizar perfil de Firebase Auth
-      console.time("firebase-updateProfile");
-      await updateProfile(auth.currentUser, { photoURL: publicUrl });
+    // 🔹 Mostrar preview inmediato
+    const previewURL = URL.createObjectURL(compressedFile);
+    setPhotoURL(previewURL);
 
-      // 🔹 Actualizar Firestore sin borrar otros campos
-      await setDoc(
-        doc(db, "users", auth.currentUser.uid),
-        { photoURL: publicUrl },
-        { merge: true }
-      );
-      console.timeEnd("firebase-updateProfile");
+    // 🔹 Subir imagen a Cloudinary
+    console.time("cloudinary-upload");
+    const publicUrl = await uploadImage(compressedFile);
+    console.timeEnd("cloudinary-upload");
 
-      setPhotoURL(publicUrl);
-      alert("Foto de perfil actualizada");
-    } catch (error) {
-      console.error(error);
-      alert("Error subiendo la foto");
-    }
-  };
+    // 🔹 Actualizar perfil de Firebase Auth
+    console.time("firebase-updateProfile");
+    await updateProfile(auth.currentUser, { photoURL: publicUrl });
+
+    // 🔹 Actualizar Firestore sin borrar otros campos
+    await setDoc(
+      doc(db, "users", auth.currentUser.uid),
+      { photoURL: publicUrl },
+      { merge: true }
+    );
+    console.timeEnd("firebase-updateProfile");
+
+    // 🔹 Actualizar con la URL final de Cloudinary
+    setPhotoURL(publicUrl);
+    alert("Foto de perfil actualizada");
+  } catch (error) {
+    console.error(error);
+    alert("Error subiendo la foto");
+  }
+};
+
 
   if (!auth.currentUser) {
     console.log("No hay usuario autenticado");
