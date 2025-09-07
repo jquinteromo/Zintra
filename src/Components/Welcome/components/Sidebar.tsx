@@ -16,6 +16,7 @@ import {
   Pencil,
   EllipsisVertical,
   Check,
+  
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -28,6 +29,8 @@ export default function Sidebar() {
     setEditDescriptionporfil,
     NameUserUpdate,
     setNameUserUpdate,
+    DescriptionUserUpdate,
+    setDescriptionUserUpdate
   } = StatesSidebar();
 
   const handleEditName = () => {
@@ -99,7 +102,21 @@ export default function Sidebar() {
       { nombre: NameUserUpdate },
       { merge: true }
     );
-  };
+  }
+  
+  const updateDescription = async ()=>{
+    const uid = auth.currentUser?.uid
+    if(!uid){
+      console.error("Usuario no autenticado")
+      return
+    }
+
+    await setDoc(
+      doc(db, "users",uid),
+      {description:DescriptionUserUpdate},
+      {merge:true}
+    )
+  }
 
   useEffect(() => {
     const uid = auth.currentUser?.uid;
@@ -115,6 +132,7 @@ export default function Sidebar() {
           return {
             ...prev,
             nombre: data.nombre ?? prev.nombre,
+            description: data.description ?? prev.description
           };
         });
       }
@@ -265,12 +283,18 @@ export default function Sidebar() {
               {EditDescriptionporfil ? (
                 <>
                   <input
+                  value={DescriptionUserUpdate}
+                  onChange={(e)=>{
+                    setDescriptionUserUpdate(e.target.value);
+                    console.log(DescriptionUserUpdate)
+                  }}
                     className="pl-2 w-auto min-w-[120px] max-w-[250px] bg-[#1a1c20]/80 py-1.5 outline-none border border-white/35 rounded-lg text-gray-300 text-sm"
                     type="text"
                   />
                   <button
                     onClick={() => {
                       setEditDescriptionporfil(false);
+                      updateDescription()
                     }}
                     className="bg-yellow-300 text-black p-1 rounded-md hover:bg-yellow-400 transition"
                   >
@@ -280,7 +304,7 @@ export default function Sidebar() {
               ) : (
                 <>
                   <p className="text-sm text-gray-400 whitespace-nowrap">
-                    Software Engineer
+                    {user?.description ?? ''}
                   </p>
                   <button
                     onClick={handleEditDescription}

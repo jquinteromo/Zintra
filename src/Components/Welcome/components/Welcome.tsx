@@ -35,7 +35,8 @@ export default function Welcome() {
             email: data.email ?? "desconocido@example.com",
             photoURL: data.photoURL ?? null,
             createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
-            verificado:data.verificado ?? null
+            verificado:data.verificado ?? null,
+            description : data.description ?? ""
           });
         } else {
           setUser({
@@ -43,12 +44,13 @@ export default function Welcome() {
             email: "desconocido@example.com",
             photoURL: null,
             createdAt: new Date(),
-           verificado: null 
+           verificado: null, 
+           description :""
           });
         }
       } catch (error) {
         console.error("Error al cargar datos del usuario:", error);
-        setUser({ nombre: "Usuario", photoURL: null,verificado:null });
+        setUser({ nombre: "Usuario", photoURL: null,verificado:null,description :"" });
       } finally {
         setLoading(false);
       }

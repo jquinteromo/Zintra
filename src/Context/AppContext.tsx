@@ -7,6 +7,7 @@ interface User {
   createdAt?: Date;
   pin?: string;
  verificado: boolean | null;
+ description :string
 }
 
 export type AppContextType = {
