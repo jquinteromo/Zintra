@@ -6,7 +6,7 @@ import Welcome from "./Components/Welcome/components/Welcome";
 import SessionGuard from "./SessionGuard";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import Discover from "./Components/Welcome/components/Componentssidebar/Discover";
 function App() {
   return (
     <Router>
@@ -20,6 +20,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Welcome />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/DiscoverUs"
+            element={
+              <PrivateRoute>
+                <Discover />
               </PrivateRoute>
             }
           />

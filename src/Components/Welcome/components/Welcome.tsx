@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";  
 import { getAuth } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
@@ -12,7 +11,7 @@ export default function Welcome() {
   const { user, setUser } = useApp();
 
   const auth = getAuth();
-  const navigate = useNavigate();
+ 
 
 
   const [loading, setLoading] = useState(true);
@@ -59,10 +58,7 @@ export default function Welcome() {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await auth.signOut();
-    navigate("/login");
-  };
+
 
   if (loading) {
     return (
@@ -80,12 +76,7 @@ export default function Welcome() {
     <div className="flex flex-row w-full bg-black">
       <Sidebar/>
       <ChatWindow />
-      <button 
-        onClick={handleLogout}
-        className="bg-red-500 text-white px-4 py-2 rounded"
-      >
-        Cerrar sesión
-      </button>
+
     </div>
   );
 }

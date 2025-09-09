@@ -7,6 +7,7 @@ export const StatesSidebar = () => {
 
   const [NameUserUpdate, setNameUserUpdate] = useState<string>("");
   const [DescriptionUserUpdate,setDescriptionUserUpdate] =useState<string>("")
+  const [Showwindow,setShowwindow]= useState<string>("Profile")
 
   return {
     EditPhotoperfil,
@@ -18,6 +19,8 @@ export const StatesSidebar = () => {
     NameUserUpdate,
     setNameUserUpdate,
     DescriptionUserUpdate,
-    setDescriptionUserUpdate
+    setDescriptionUserUpdate,
+    Showwindow,
+    setShowwindow
   };
 };
