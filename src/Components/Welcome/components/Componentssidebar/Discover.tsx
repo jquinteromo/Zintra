@@ -1,11 +1,10 @@
+import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { db } from "../../../../firebase";
 import VerifiedBadge from "../../../../Verification✔/VerifiedBadge";
-
-import { ArrowLeft,MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 import { UserProfileCard } from "../../../UserProfileCard";
-
 import { StatesDiscover } from "../../../../States/StatesDiscover";
 
 interface Props {
@@ -13,61 +12,59 @@ interface Props {
   description: string;
   photoURL: string;
   verificado?: boolean;
-  uid :string
+  uid: string;
 }
-
-const UserCard :Props={
-  nombre: "",
-  description: "",
-  photoURL: "",
-  verificado: false,
-  uid :""
-} 
 
 interface HijoProps {
   setShowWindos: (value: string) => void;
 }
 
-const UsersZintra = collection(db, "users");
-const snapshot = await getDocs(UsersZintra);
-
-const allUsers = snapshot.docs.map((doc) => {
-  const { nombre, photoURL, verificado,description } = doc.data();
-  return { uid: doc.id, nombre, photoURL, verificado,description };
-});
-
-
-const truncateNombre = (nombre: string) => {
-
-  return nombre.length > 15 ? nombre.slice(0, 15) + "..." : nombre;
-};
+const truncateNombre = (nombre: string) =>
+  nombre.length > 15 ? nombre.slice(0, 15) + "..." : nombre;
 
 const Discover = ({ setShowWindos }: HijoProps) => {
-
-  
-  const {
-      ShowModal,
-       setShowModal,
-    } = StatesDiscover();
+  const [allUsers, setAllUsers] = useState<Props[]>([]);
+  const [Userview, setUserview] = useState<Props | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  const { ShowModal, setShowModal } = StatesDiscover();
+
+  useEffect(() => {
+    const auth = getAuth();
+    const fetchUsers = async () => {
+      if (!auth.currentUser) return;
+
+      try {
+        const UsersZintra = collection(db, "users");
+        const snapshot = await getDocs(UsersZintra);
+        const users = snapshot.docs.map((doc) => {
+          const { nombre, photoURL, verificado, description } = doc.data();
+          return {
+            uid: doc.id,
+            nombre,
+            photoURL,
+            verificado,
+            description,
+          } as Props;
+        });
+        setAllUsers(users);
+      } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filtrados = allUsers.filter((u) =>
     u.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  const [Userview,setUserview] = useState<Props>(UserCard)
-
-  //  useEffect(() => {
-  //     console.log(allUsers)
-  //   }, []);
   return (
     <div className="w-full max-w-lg mx-auto p-4 bg-[#0b0c10] rounded-xl border border-[#1f2126] shadow-md">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
-          onClick={() => {
-            setShowWindos("Profile");
-          }}
+          onClick={() => setShowWindos("Profile")}
           className="p-2 rounded-full hover:bg-[#1a1c20] transition"
           title="Volver"
         >
@@ -90,20 +87,27 @@ const Discover = ({ setShowWindos }: HijoProps) => {
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />
-<UserProfileCard setShowModal={setShowModal} ShowModal={ShowModal} Userview={Userview}></UserProfileCard>
+
+      {/* Card del usuario seleccionado */}
+      {Userview && (
+        <UserProfileCard
+          setShowModal={setShowModal}
+          ShowModal={ShowModal}
+          Userview={Userview}
+        />
+      )}
+
       {/* Lista de usuarios */}
       <ul className="space-y-4">
         {filtrados.map((u) => (
           <li
             key={u.uid}
-            onClick={() => {setUserview(u);
-              setShowModal(true)
-              }
-            }
-            className="flex items-center justify-between bg-gradient-to-r cursor-pointer  from-[#101114] to-[#1a1c20] p-4 rounded-xl border border-[#2a2d33] hover:border-yellow-300 hover:shadow-[0_0_12px_rgba(253,224,71,0.3)] transition-all duration-200"
+            onClick={() => {
+              setUserview(u);
+              setShowModal(true);
+            }}
+            className="flex items-center justify-between bg-gradient-to-r cursor-pointer from-[#101114] to-[#1a1c20] p-4 rounded-xl border border-[#2a2d33] hover:border-yellow-300 hover:shadow-[0_0_12px_rgba(253,224,71,0.3)] transition-all duration-200"
           >
-            {/* Foto + Nombre */}
-
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <img
                 src={u.photoURL || "photo_defect/Photodefect.png"}
@@ -115,15 +119,14 @@ const Discover = ({ setShowWindos }: HijoProps) => {
                   className="text-white font-medium text-sm tracking-wide whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]"
                   title={u.nombre}
                 >
-                  {truncateNombre(u?.nombre ?? "Cargando...")}
+                  {truncateNombre(u.nombre)}
                 </span>
-                {u?.verificado && (
+                {u.verificado && (
                   <VerifiedBadge size={16} className="shrink-0 mr-2" />
                 )}
               </div>
             </div>
 
-            {/* Botón mensaje */}
             <button
               className="bg-yellow-300 text-black p-2 rounded-full hover:bg-yellow-400 transition duration-150 shadow-md"
               title="Enviar mensaje"
@@ -138,3 +141,4 @@ const Discover = ({ setShowWindos }: HijoProps) => {
 };
 
 export default Discover;
+
