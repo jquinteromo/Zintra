@@ -7,6 +7,12 @@ import SessionGuard from "./SessionGuard";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Discover from "./Components/Welcome/components/Componentssidebar/Discover";
+
+import { StatesSidebar } from "./States/StatesSidebar";
+  const {
+    setShowwindow,
+  } = StatesSidebar();
+
 function App() {
   return (
     <Router>
@@ -27,7 +33,7 @@ function App() {
             path="/DiscoverUs"
             element={
               <PrivateRoute>
-                <Discover />
+                <Discover  setShowWindos={setShowwindow}/>
               </PrivateRoute>
             }
           />

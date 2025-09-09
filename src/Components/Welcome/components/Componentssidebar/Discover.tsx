@@ -43,6 +43,8 @@ const truncateNombre = (nombre: string) => {
 };
 
 const Discover = ({ setShowWindos }: HijoProps) => {
+
+  
   const {
       ShowModal,
        setShowModal,
