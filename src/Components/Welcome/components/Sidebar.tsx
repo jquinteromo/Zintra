@@ -156,7 +156,7 @@ export default function Sidebar() {
 
   return (
     <div className="w-[29rem] bg-[#0b0c10] border-r border-[#1f2126] h-screen text-white flex flex-col">
-      <div className="overflow-y-auto flex-1 p-4 border-b border-[#1f2126] scrollbar-hide">
+      <div className="overflow-y-scroll scrollbar-hide  flex-1 p-4 border-b border-[#1f2126]">
         {/* Zintra Logo */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <img
@@ -249,7 +249,7 @@ export default function Sidebar() {
         <img
           src={currentPhotoURL ?? "photo_defect/Photodefect.png"}
           alt="avatar-blur"
-          className="w-44 h-36 blur-[80px] object-cover opacity-40 scale-x-125"
+          className="w-44 h-36 blur-[80px] object-cover opacity-60 scale-x-150"
         />
       </div>
       <img

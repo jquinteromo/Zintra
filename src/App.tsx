@@ -9,11 +9,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Discover from "./Components/Welcome/components/Componentssidebar/Discover";
 
 import { StatesSidebar } from "./States/StatesSidebar";
-  const {
+
+function App() {
+    const {
     setShowwindow,
   } = StatesSidebar();
 
-function App() {
   return (
     <Router>
       <div className="">
